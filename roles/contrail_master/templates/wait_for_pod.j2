@@ -1,0 +1,59 @@
+#!/bin/bash 
+###
+### Borrowed from https://github.com/kubernetes/charts/blob/master/test/verify-release.sh
+### 
+
+namespace=contrail-system
+
+# Ensure all pods in the namespace entered a Running state
+retry_count=100
+retry_delay=5
+
+pod_retry_count=0
+while [ "$pod_retry_count" -lt "$retry_count" ]; do
+  pod_retry_count=$((pod_retry_count+1))
+  pod_status=`{{ openshift_client_binary }} get pods --no-headers --namespace $namespace`
+  if [ -z "$pod_status" ];then
+    echo "INFO: No pods found for this release, retrying after sleep"
+    pod_retry_count=$((pod_retry_count+1))
+    sleep $retry_delay
+    continue
+  fi
+
+  if echo "$pod_status" | grep -v Running;then
+    echo "INFO: All pods are not in the Running state"
+    container_status=`{{ openshift_client_binary }} get pods --namespace $namespace \
+        -o jsonpath="{.items[*].status.initContainerStatuses[?(@.ready!=true)].name}"`
+    if [ -n "$container_status" ];then
+      echo "INFO: Some init containers are not yet ready; retrying after sleep"
+      sleep $retry_delay
+      continue
+    else
+      echo "INFO: All init containers are ready"
+    fi
+
+    container_status=`{{ openshift_client_binary }} get pods --namespace $namespace \
+        -o jsonpath="{.items[*].status.containerStatuses[?(@.ready!=true)].name}"`
+    if [ -n "$container_status" ];then
+      echo "INFO: Some containers are not yet ready; retrying after sleep"
+      sleep $retry_delay
+      continue
+    else
+      echo "INFO: All containers are ready"
+      exit 0
+    fi
+  else
+   echo "INFO: All pods are ready"
+   exit 0
+  fi
+done
+
+pod_failed=`oc get pods --no-headers --namespace $namespace | grep -v Running | cut -d " " -f1`
+if [ -z "$pod_failed" ];then
+  echo "INFO: All pods are ready"
+  exit 0
+else
+  echo "ERROR: Some pods failed to reach the ready state"
+  echo "ERROR: PODs $pod_failed is not ready"
+  exit 1
+fi

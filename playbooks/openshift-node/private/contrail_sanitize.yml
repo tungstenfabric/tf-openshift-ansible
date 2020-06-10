@@ -1,0 +1,30 @@
+---
+- name: Contrail wait for all pods
+  hosts: oo_first_master
+  tasks:
+    - name: Run wait_for_pod.sh in oo_first_master
+      command: /tmp/wait_for_pod.sh
+      register: command_result
+      failed_when: "'ERROR' in command_result.stdout"
+
+- name: Contrail Restarting dnsmasq service
+  hosts: "{{ openshift_node_scale_up_group | default('oo_nodes_to_config') }}"
+  tasks:
+    - name: Restart dnsmasq
+      service:
+        name: "dnsmasq"
+        state: restarted
+        enabled: yes
+      when:
+        - openshift_use_contrail | default(false) | bool
+        - not nested_mode_contrail | default(false) | bool
+
+- name: Contrail opening port 53
+  hosts: "{{ openshift_node_scale_up_group | default('oo_nodes_to_config') }}"
+  tasks:
+    - name: Open udp port 53
+      command: iptables -I OS_FIREWALL_ALLOW 1 -j ACCEPT -p udp --dport 53
+      when:
+        - openshift_use_contrail | default(false) | bool
+        - not os_firewall_use_firewalld | default(False) | bool
+

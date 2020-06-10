@@ -1,0 +1,117 @@
+# All in One configuration with enabled Contrail and IP FABRIC FORWARDING
+#
+
+[OSEv3:vars]
+
+###########################################################################
+### OpenShift Basic Vars
+###########################################################################
+ansible_become=true
+openshift_deployment_type=openshift-enterprise
+openshift_deployment_subtype=registry
+openshift_disable_check=memory_availability,package_availability,disk_availability,package_version,docker_storage,docker_image_availability
+
+openshift_node_groups=[{'name': 'node-config-all-in-one', 'labels': ['node-role.kubernetes.io/master=true', 'node-role.kubernetes.io/infra=true', 'node-role.kubernetes.io/compute=true']}]
+
+openshift_hosted_infra_selector="node-role.kubernetes.io/infra=true"
+
+# Redhat customer credentials
+#oreg_auth_user=
+#oreg_auth_password=
+#oreg_url=
+
+openshift_install_examples=false
+#openshift_image_tag=v3.11
+#system_images_registry="registry.redhat.io"
+
+###########################################################################
+### OpenShift Network Vars
+###########################################################################
+openshift_use_openshift_sdn=false
+os_sdn_network_plugin_name='cni'
+openshift_use_contrail=true
+openshift_node_sdn_mtu="{{ ansible_default_ipv4.mtu }}"
+
+
+###########################################################################
+### OpenShift Authentication Vars
+###########################################################################
+# htpasswd Authentication
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+
+###########################################################################
+### OpenShift Master Vars
+###########################################################################
+openshift_master_api_port=8443
+openshift_master_console_port=8443
+
+openshift_master_cluster_method=native
+#openshift_master_cluster_hostname=openshift-aio-eth0.local
+#openshift_master_cluster_public_hostname=openshift-aio-eth0.local
+#openshift_master_default_subdomain=local
+
+###########################################################################
+### OpenShift Router and Registry Vars
+###########################################################################
+openshift_push_via_dns=true
+openshift_hosted_router_replicas=1
+openshift_hosted_registry_replicas=1
+
+###########################################################################
+### OpenShift disable metrics, monitoring, logging services for simple AIO
+###########################################################################
+openshift_logging_install_logging=false
+openshift_hosted_prometheus_deploy=false
+openshift_metrics_install_metrics=false
+openshift_enable_service_catalog=false
+template_service_broker_install=false
+ansible_service_broker_install=false
+
+#########################################################################
+### Contrail Variables
+#########################################################################
+
+# set to own values
+#contrail_registry="tungstenfabric"
+#contrail_container_tag="latest"
+contrail_version="{{ contrail_container_tag }}"
+
+cloud_orchestrator=kubernetes
+
+aaa_mode=no-auth
+auth_mode=noauth
+
+metadata_proxy_secret=contrail
+analyticsdb_min_diskgb=10
+configdb_min_diskgb=10
+log_level=SYS_DEBUG
+
+vrouter_gateway="{{ ansible_default_ipv4.gateway }}"
+vrouter_physical_interface="{{ ansible_default_ipv4.interface }}"
+
+service_subnets="172.30.0.0/16"
+pod_subnets="10.128.0.0/14"
+
+public_fip_pool="{'project' : 'k8s-default', 'domain': 'default-domain', 'name': '__fip_pool_public__' , 'network' : '__public__'}"
+ip_fabric_forwarding=true
+ip_fabric_snat=false
+
+contrail_node_group=node-config-all-in-one
+
+
+###########################################################################
+### OpenShift Hosts
+###########################################################################
+[OSEv3:children]
+masters
+etcd
+nodes
+
+[masters]
+localhost ansible_connection=local
+
+[etcd]
+localhost ansible_connection=local
+
+[nodes]
+localhost ansible_connection=local openshift_node_group_name="node-config-all-in-one"

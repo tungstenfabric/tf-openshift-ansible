@@ -1,0 +1,26 @@
+---
+- name: Create the get IP file to convert hostname to ip
+  template:
+    src: getIp.j2
+    dest: /tmp/getIp.py
+    owner: root
+    mode: 0644
+  run_once: True
+
+- name: Starting contrail common
+  include_tasks: os_contrail_common.yaml
+
+- name: Create the contrail nested template file
+  template:
+    src: contrail-nested.j2
+    dest: /tmp/contrail-nested.yaml
+    owner: root
+    mode: 0644
+  run_once: True
+
+- name: Create the contrail nested components
+  command: "{{ openshift_client_binary }} create -f /tmp/contrail-nested.yaml"
+  run_once: True
+  ignore_errors: True
+  when:
+    - contrail_version is version('5.0', '>=')

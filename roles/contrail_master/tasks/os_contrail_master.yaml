@@ -1,0 +1,139 @@
+---
+- name: Create the get IP file to convert hostname to ip
+  template:
+    src: getIp.j2
+    dest: /tmp/getIp.py
+    owner: root
+    mode: 0644
+  run_once: True
+
+- set_fact:
+    api_vip: "{{ groups.lb.0 | ipaddr }}"
+  when: groups.lb is defined
+  run_once: True
+
+- set_fact:
+    api_vip: "{{ openshift_master_cluster_public_hostname }}"
+  when: openshift_master_cluster_public_hostname is defined
+  run_once: True
+
+- set_fact:
+    api_vip: "{{ groups.masters.0 }}"
+  when: api_vip is not defined
+  run_once: True
+
+- name: validate api_vip hostname or ip
+  command: python /tmp/getIp.py {{ api_vip }}
+  register: api_vip_result
+  run_once: True
+
+- name: set api_vip
+  set_fact:
+    api_vip: "{{ api_vip_result.stdout }}"
+  when: api_vip_result is success
+  run_once: True
+
+- name: Contrail starting common
+  include_tasks: os_contrail_common.yaml
+
+- name: Contrail create the template files
+  template:
+    src: "{{ item }}-5.j2"
+    dest: "/tmp/{{ item }}.yaml"
+    owner: root
+    mode: 0644
+  run_once: True
+  with_items:
+    - "contrail-image-downloader-infra"
+    - "contrail-image-downloader-controller"
+    - "contrail-image-downloader-analytics"
+    - "contrail-image-downloader-agent"
+    - "contrail-infra-vars"
+    - "contrail-agent"
+    - "contrail-ext-redis"
+    - "contrail-config-db"
+    - "contrail-analytics-db"
+    - "contrail-control-config"
+    - "contrail-analytics"
+    - "contrail-analytics-alarm"
+    - "contrail-analytics-snmp"
+    - "contrail-webui"
+    - "contrail-control-control"
+    - "contrail-kube-manager"
+
+- name: Contrail starting image downloader
+  command: "{{ openshift_client_binary }} create -f /tmp/{{ item }}.yaml"
+  run_once: True
+  ignore_errors: True
+  with_items:
+    - "contrail-image-downloader-infra"
+    - "contrail-image-downloader-controller"
+    - "contrail-image-downloader-analytics"
+    - "contrail-image-downloader-agent"
+
+- name: Contrail wait for image downloader pods
+  command: /tmp/wait_for_pod.sh
+
+- name: Contrail starting infra-vars
+  command: "{{ openshift_client_binary }} create -f /tmp/{{ item }}.yaml"
+  run_once: True
+  ignore_errors: True
+  with_items:
+    - "contrail-infra-vars"
+
+- name: Contrail starting vrouter-agent
+  command: "{{ openshift_client_binary }} create -f /tmp/{{ item }}.yaml"
+  run_once: True
+  ignore_errors: True
+  with_items:
+    - "contrail-agent"
+
+- name: Contrail wait for vrouter-agent
+  command: /tmp/wait_for_pod.sh
+
+- name: Contrail starting config analytics webui
+  command: "{{ openshift_client_binary }} create -f /tmp/{{ item }}.yaml"
+  run_once: True
+  ignore_errors: True
+  with_items:
+    - "contrail-ext-redis"
+    - "contrail-config-db"
+    - "contrail-analytics-db"
+    - "contrail-control-config"
+    - "contrail-analytics"
+    - "contrail-analytics-alarm"
+    - "contrail-analytics-snmp"
+    - "contrail-webui"
+
+- name: Contrail wait for config analytics webui
+  command: /tmp/wait_for_pod.sh
+
+- name: Contrail starting control
+  command: "{{ openshift_client_binary }} create -f /tmp/{{ item }}.yaml"
+  run_once: True
+  ignore_errors: True
+  with_items:
+    - "contrail-control-control"
+
+- name: Contrail wait for control
+  command: /tmp/wait_for_pod.sh
+
+- name: Contrail starting orchestartor plugins
+  command: "{{ openshift_client_binary }} create -f /tmp/{{ item }}.yaml"
+  run_once: True
+  ignore_errors: True
+  with_items:
+    - "contrail-kube-manager"
+
+- name: Contrail wait for orchestartor plugins
+  command: /tmp/wait_for_pod.sh
+
+- name: Contrail deleting all image downloader
+  command: "{{ openshift_client_binary }} delete -f /tmp/{{ item }}.yaml"
+  run_once: True
+  ignore_errors: True
+  with_items:
+    - "contrail-image-downloader-infra"
+    - "contrail-image-downloader-controller"
+    - "contrail-image-downloader-analytics"
+    - "contrail-image-downloader-agent"
