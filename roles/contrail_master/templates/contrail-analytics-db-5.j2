@@ -101,6 +101,8 @@ spec:
         imagePullPolicy: "IfNotPresent"
         securityContext:
           privileged: true
+          capabilities:
+            add: ["SYS_NICE"]
         env:
         - name: NODE_TYPE
           value: database
