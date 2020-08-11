@@ -108,8 +108,15 @@ spec:
         - configMapRef:
             name: configzookeeperenv
         volumeMounts:
+        - mountPath: /data
+          name: zookeeper-data
+          subPath: data
+        - mountPath: /datalog
+          name: zookeeper-data
+          subPath: datalog
         - mountPath: /var/lib/zookeeper
           name: zookeeper-data
+          subPath: lib
         - mountPath: /var/log/zookeeper
           name: zookeeper-logs
       - name: rabbitmq
