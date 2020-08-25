@@ -110,13 +110,10 @@ spec:
         volumeMounts:
         - mountPath: /data
           name: zookeeper-data
-          subPath: data
         - mountPath: /datalog
-          name: zookeeper-data
-          subPath: datalog
+          name: zookeeper-datalog
         - mountPath: /var/lib/zookeeper
-          name: zookeeper-data
-          subPath: lib
+          name: zookeeper-datalib
         - mountPath: /var/log/zookeeper
           name: zookeeper-logs
       - name: rabbitmq
@@ -178,7 +175,13 @@ spec:
           path: /etc/localtime
       - name: zookeeper-data
         hostPath:
-          path: /var/lib/contrail/config-zookeeper
+          path: /var/lib/contrail/config-zookeeper/data
+      - name: zookeeper-datalog
+        hostPath:
+          path: /var/lib/contrail/config-zookeeper/datalog
+      - name: zookeeper-datalib
+        hostPath:
+          path: /var/lib/contrail/config-zookeeper/datalib
       - name: zookeeper-logs
         hostPath:
           path: /var/log/contrail/config-zookeeper
