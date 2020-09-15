@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ca7588b6_6d28be34",
+        "filename": "playbooks/openshift-checks/private/adhoc.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1001
+      },
+      "writtenOn": "2020-09-15T13:17:39Z",
+      "side": 1,
+      "message": "It\u0027s change",
+      "revId": "779a96b8773748d9a0a4c3e902bcd78561eab8d3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c8f784b2_0452ee71",
+        "filename": "playbooks/openshift-checks/private/health.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1001
+      },
+      "writtenOn": "2020-09-15T13:17:39Z",
+      "side": 1,
+      "message": "It\u0027s change",
+      "revId": "779a96b8773748d9a0a4c3e902bcd78561eab8d3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b340a6f1_dd129f95",
+        "filename": "playbooks/openshift-checks/private/install.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1001
+      },
+      "writtenOn": "2020-09-15T13:17:39Z",
+      "side": 1,
+      "message": "It\u0027s change",
+      "revId": "779a96b8773748d9a0a4c3e902bcd78561eab8d3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aed1c4f2_0d628049",
+        "filename": "playbooks/openshift-checks/private/pre-install.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1001
+      },
+      "writtenOn": "2020-09-15T13:17:39Z",
+      "side": 1,
+      "message": "It\u0027s change",
+      "revId": "779a96b8773748d9a0a4c3e902bcd78561eab8d3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
