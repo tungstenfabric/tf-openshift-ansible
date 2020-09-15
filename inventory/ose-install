@@ -1,52 +1,37 @@
 [OSEv3:vars]
-
-###########################################################################
 ### Ansible Vars
-###########################################################################
-#timeout=60
-
-###########################################################################
+timeout=60
 ### OpenShift Basic Vars
-###########################################################################
 openshift_deployment_type=openshift-enterprise
 deployment_type=openshift-enterprise
 containerized=false
 openshift_disable_check=memory_availability,package_availability,disk_availability,package_version,docker_storage,docker_image_availability
-
 # Default node selectors
 openshift_hosted_infra_selector="node-role.kubernetes.io/infra=true"
-
 # Redhat customer credentials
-oreg_auth_user=<>
-oreg_auth_password=<>
-###########################################################################
+oreg_auth_user=simonsredhataccount
+oreg_auth_password=Lucent5ess123_
+#openshift_override_hostname_check=true
 ### OpenShift Master Vars
-###########################################################################
-
 openshift_master_api_port=8443
 openshift_master_console_port=8443
-
 openshift_master_cluster_method=native
+#the next two would be LB's in HA
 #openshift_master_cluster_hostname=ip-172-31-25-175.ap-southeast-1.compute.internal
 #openshift_master_cluster_public_hostname=ec2-13-251-240-166.ap-southeast-1.compute.amazonaws.com
-#openshift_master_default_subdomain=apps.ap-southeast-1.compute.amazonaws.com
-
+#this is the domain used when you expose the apps, we probably need to set this one up later on
+openshift_master_default_subdomain=router.default.svc.cluster.local
 # Set this line to enable NFS
 openshift_enable_unsupported_configurations=True
-
-#########################################################################
 ### Contrail Variables
-########################################################################
-
-contrail_version=5.1
-
-contrail_container_tag=rhel-5.1-76
-#contrail_registry="ci-repo.englab.juniper.net:5010"
-#contrail_registry_username=<>
-#contrail_registry_password=<>
+contrail_version="2005"
+contrail_container_tag="2005.62-rhel"
+contrail_registry="hub.juniper.net/contrail"
+contrail_registry_username=JNPR-FieldUser168
+contrail_registry_password=EwRUWcLKbzTe2NnD6Gxu
 # need to notify openshift to configure insecure registry as below
-openshift_docker_insecure_registries="ci-repo.englab.juniper.net:5010"
-
+#openshift_docker_insecure_registries="ci-repo.englab.juniper.net:5010"
+openshift_docker_insecure_registries="hub.juniper.net/contrail"
 #contrail_os_release=redhat7
 #analyticsdb_min_diskgb=50
 #configdb_min_diskgb=25
@@ -67,52 +52,34 @@ openshift_docker_insecure_registries="ci-repo.englab.juniper.net:5010"
 #vrouter_physical_interface=eth0
 #kubernetes_api_secure_port=443
 #nested_mode_contrail=false
-
 # vip should be master
 #api_vip="172.31.25.175"
-
-# service subnet and pod subnet in contrail
-service_subnets="172.30.0.0/16"
-pod_subnets="10.128.0.0/14"
-
-# following variables change pod and service subnet in openshift
-#osm_cluster_network_cidr=10.128.0.0/14
-#openshift_portal_net=172.30.0.0/16
-
+public_fip_pool="{'domain': 'default-domain', 'project': 'k8s-default', 'network': 'k8s-public', 'name': 'default'}"
+#service subnet and pod subnet in contrail and OpenShift
+osm_cluster_network_cidr=10.20.35.0/24
+pod_subnets=10.20.35.0/24
+osm_host_subnet_length=5
+service_subnets=10.20.36.0/24
+openshift_portal_net=10.20.36.0/24
 # Multi interface config
 #multi_interface='true'
 #control_nodes=192.168.100.2
 #controller_nodes=10.84.13.54
 #vrouter_physical_interface=ens2f0
 #vrouter_gateway=192.168.100.2
-###########################################################################
 ### OpenShift Network Vars
-###########################################################################
-
 #os_sdn_network_plugin_name='redhat/openshift-ovs-networkpolicy'
 openshift_use_openshift_sdn=false
 #r_openshift_node_use_openshift_sdn=True
 os_sdn_network_plugin_name='cni'
 openshift_use_contrail=true
 #openshift_use_calico=true
-
-
-###########################################################################
 ### OpenShift Authentication Vars
-###########################################################################
-
 # htpasswd Authentication
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
-
-
-###########################################################################
 ### OpenShift Router and Registry Vars
-###########################################################################
-
 openshift_hosted_router_replicas=1
-
 openshift_hosted_registry_replicas=1
-
 openshift_hosted_registry_storage_kind=nfs
 openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
 openshift_hosted_registry_storage_nfs_directory=/export
@@ -124,18 +91,12 @@ openshift_hosted_registry_acceptschema2=true
 openshift_hosted_registry_enforcequota=true
 openshift_hosted_router_selector="node-role.kubernetes.io/infra=true"
 openshift_hosted_registry_selector="node-role.kubernetes.io/infra=true"
-###########################################################################
 ### OpenShift Service Catalog Vars
-###########################################################################
-
 openshift_enable_service_catalog=true
-
 template_service_broker_install=true
 openshift_template_service_broker_namespaces=['openshift']
-
 ansible_service_broker_install=true
 ansible_service_broker_local_registry_whitelist=['.*-apb$']
-
 openshift_hosted_etcd_storage_kind=nfs
 openshift_hosted_etcd_storage_nfs_options="*(rw,root_squash,sync,no_wdelay)"
 openshift_hosted_etcd_storage_nfs_directory=/export
@@ -143,14 +104,9 @@ openshift_hosted_etcd_storage_labels={'storage': 'etcd-asb'}
 openshift_hosted_etcd_storage_volume_name=etcd-asb
 openshift_hosted_etcd_storage_access_modes=['ReadWriteOnce']
 openshift_hosted_etcd_storage_volume_size=10G
-
-
-###########################################################################
 ### OpenShift Metrics and Logging Vars
-###########################################################################
 # Enable cluster metrics
 openshift_metrics_install_metrics=True
-
 openshift_metrics_storage_kind=nfs
 openshift_metrics_storage_access_modes=['ReadWriteOnce']
 openshift_metrics_storage_nfs_directory=/export
@@ -158,38 +114,16 @@ openshift_metrics_storage_nfs_options='*(rw,root_squash)'
 openshift_metrics_storage_volume_name=metrics
 openshift_metrics_storage_volume_size=10Gi
 openshift_metrics_storage_labels={'storage': 'metrics'}
-
 openshift_metrics_cassandra_nodeselector={"node-role.kubernetes.io/infra":"true"}
 openshift_metrics_hawkular_nodeselector={"node-role.kubernetes.io/infra":"true"}
 openshift_metrics_heapster_nodeselector={"node-role.kubernetes.io/infra":"true"}
-
 # Enable cluster logging
 openshift_logging_install_logging=false
-
-openshift_logging_storage_kind=nfs
-openshift_logging_storage_access_modes=['ReadWriteOnce']
-openshift_logging_storage_nfs_directory=/export
-openshift_logging_storage_nfs_options='*(rw,root_squash)'
-openshift_logging_storage_volume_name=logging
-openshift_logging_storage_volume_size=10Gi
-openshift_logging_storage_labels={'storage': 'logging'}
-
-openshift_logging_es_cluster_size=1
-
-openshift_logging_es_nodeselector={"node-role.kubernetes.io/infra":"true"}
-openshift_logging_kibana_nodeselector={"node-role.kubernetes.io/infra":"true"}
-openshift_logging_curator_nodeselector={"node-role.kubernetes.io/infra":"true"}
-
-
-###########################################################################
 ### OpenShift Prometheus Vars
-###########################################################################
-
 ## Add Prometheus Metrics:
 openshift_hosted_prometheus_deploy=true
 openshift_prometheus_node_selector={"node-role.kubernetes.io/infra":"true"}
 openshift_prometheus_namespace=openshift-metrics
-
 # Prometheus
 openshift_prometheus_storage_kind=nfs
 openshift_prometheus_storage_access_modes=['ReadWriteOnce']
@@ -199,7 +133,6 @@ openshift_prometheus_storage_volume_name=prometheus
 openshift_prometheus_storage_volume_size=10Gi
 openshift_prometheus_storage_labels={'storage': 'prometheus'}
 openshift_prometheus_storage_type='pvc'
-
 # For prometheus-alertmanager
 openshift_prometheus_alertmanager_storage_kind=nfs
 openshift_prometheus_alertmanager_storage_access_modes=['ReadWriteOnce']
@@ -209,7 +142,6 @@ openshift_prometheus_alertmanager_storage_volume_name=prometheus-alertmanager
 openshift_prometheus_alertmanager_storage_volume_size=10Gi
 openshift_prometheus_alertmanager_storage_labels={'storage': 'prometheus-alertmanager'}
 openshift_prometheus_alertmanager_storage_type='pvc'
-
 # For prometheus-alertbuffer
 openshift_prometheus_alertbuffer_storage_kind=nfs
 openshift_prometheus_alertbuffer_storage_access_modes=['ReadWriteOnce']
@@ -219,26 +151,23 @@ openshift_prometheus_alertbuffer_storage_volume_name=prometheus-alertbuffer
 openshift_prometheus_alertbuffer_storage_volume_size=10Gi
 openshift_prometheus_alertbuffer_storage_labels={'storage': 'prometheus-alertbuffer'}
 openshift_prometheus_alertbuffer_storage_type='pvc'
-
-###########################################################################
+# patch: Disable cockpit as it slows down the installation
+osm_use_cockpit=false
 ### OpenShift Hosts
-###########################################################################
 [OSEv3:children]
 masters
 etcd
 nodes
 nfs
-
 [masters]
-a5s38node3
-
+ip-100-72-100-12.eu-west-1.compute.internal
 [etcd]
-a5s38node3
-
+ip-100-72-100-12.eu-west-1.compute.internal
 [nodes]
-a5s38node3 openshift_node_group_name='node-config-master'
-a6s41node4 openshift_node_group_name='node-config-compute'
-a6s41node3 openshift_node_group_name='node-config-infra'
-
+ip-100-72-100-12.eu-west-1.compute.internal openshift_node_group_name='node-config-master'
+ip-100-72-100-13.eu-west-1.compute.internal openshift_node_group_name='node-config-compute'
+ip-100-72-100-76.eu-west-1.compute.internal openshift_node_group_name='node-config-compute'
+ip-100-72-100-140.eu-west-1.compute.internal openshift_node_group_name='node-config-compute'
+ip-100-72-100-11.eu-west-1.compute.internal openshift_node_group_name='node-config-infra'
 [nfs]
-a6s41node4
+ip-100-72-100-12.eu-west-1.compute.internal
