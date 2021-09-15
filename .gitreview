@@ -1,5 +1,5 @@
 [gerrit]
-host=review.opencontrail.org
+host=gerrit.tungsten.io
 port=29418
 project=tungstenfabric/tf-openshift-ansible.git
-defaultbranch=release-3.11-contrail
+defaultbranch=R21.3
